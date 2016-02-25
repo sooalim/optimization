@@ -1,4 +1,4 @@
-function [x,f_k, x_x, x_y] = steepest_descent(X, f, tol, N, beta)
+function [x,f_k, x_x, x_y] = con_grad(X, f, tol, N, beta)
 
 % example: [a,f_k,x,y] = steepest_descent([-1.2, 1], f, 1e-4, 6000, 0.5);
 % example: [a,f_k,x,y] = steepest_descent([1.2, 1.2], f, 1e-4, 6000, 0.5);
