@@ -1,10 +1,11 @@
 f = @(x, y) -1*(y+47)*sin(sqrt(abs(x/2+(y+47))))-x*sin(sqrt(abs(x-(y+47)))); % eggholder function
 k = 1;
 result_CG = zeros(1, 6);
-for i = 400:1:512
-    for j =400:1:512
+for i = 400:16:512
+    for j =400:16:512
         try
-            [a,f_k,x,y] = conjugate_gradient([i, j], f, 1e-6, 2000, 0.3, '');
+            %[a,f_k,x,y] = conjugate_gradient([i, j], f, 1e-6, 2000, 0.3, '');
+            [a,f_k,x,y] = steepest_descent([i, j], f, 1e-6, 2000, 0.3, '');
         catch
             continue;
         end
