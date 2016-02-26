@@ -25,7 +25,7 @@ eps = 1;
 
 while (eps > tol) && (k <= MaxIter)
     p_k = -1 * Grad(x);
-    p_k = p_k/norm(p_k);
+    %p_k = p_k/norm(p_k);
     
     a_k = 1;
     a_k = linesearch(a_k, beta, p_k, f, x);
@@ -44,7 +44,7 @@ end %while
 rosenbrock_2d([X(1), X(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
 %test_function([X(1), X(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
 hold on
-scatter3(x_x, x_y, f_k, 'r.');
+plot3(x_x, x_y, f_k, 'r');
 
 
 
