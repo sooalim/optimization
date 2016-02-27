@@ -33,11 +33,11 @@ function varargout = test_function(X, r_x, r_y)
      
     if (nargin == 3)
        syms x y
-       ezsurfc(f, [r_x, r_y, r_x, r_y], 100)
-       xlabel('x'); ylabel('y'); zlabel('function'); colorbar 
-       text(512, 404.2319 ,1000, '\downarrow function minimal point(512, 404.2319)');
-       colormap(jet)
-       colorbar
+       ezsurfc(f, [r_x, r_y, r_x, r_y], 40)
+       xlabel('x'); ylabel('y'); zlabel('function');  
+       text(512, 404.2319 ,f(512, 404.2319), '\leftarrow function minimal point(512, 404.2319)');
+       colormap(white)
+       
     end
 
 end

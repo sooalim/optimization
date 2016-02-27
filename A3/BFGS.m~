@@ -43,7 +43,7 @@ while  (k <= MaxIter) && (norm(grad1,2) > tol)
     old_x = x;
     x = x + s_k;
     steps(k) = norm(x - old_x, 2);
-    norm_grad(k) = norm(grad1,2);
+    norm_grad(k) = norm(grad,2);
     
     %{
     if(x(1) < -512 || x(2) < -512 || x(1) > 512 || x(2) > 512)
@@ -72,7 +72,7 @@ while  (k <= MaxIter) && (norm(grad1,2) > tol)
      
     x1 = 1/(y_k'*s_k');
     if k ==1
-        %H = (y_k'* s_k')/(y_k' * y_k) * eye(2);
+        H = (y_k'* s_k')/(y_k' * y_k) * eye(2);
     else
         H = (eye(2)- x1 * s_k * y_k) * H * (eye(2) - x1 * y_k' * s_k') ...
             + (x1 * (s_k * s_k'));

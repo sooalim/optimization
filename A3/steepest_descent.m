@@ -1,4 +1,4 @@
-function [x,f_k, x_x, x_y] = steepest_descent(X, f, tol, N, beta)
+function [x,f_k, x_x, x_y] = steepest_descent(X, f, tol, N, beta, plot)
 
 %[a,f_k,x,y] = steepest_descent([1.2, 1.2], f, 1e-6,7000, 0.1); 
 %(rosenbrock) (196,872 - non normalized)
@@ -27,7 +27,7 @@ MaxIter = N;
 eps = 1;
 
 while (eps > tol) && (k <= MaxIter) && (x(1)<=512) && (x(2) <=512)
-    p_k = -1 * Grad(x)
+    p_k = -1 * Grad(x);
     %p_k = p_k/norm(p_k)
     
     a_k = 1;
@@ -43,13 +43,13 @@ while (eps > tol) && (k <= MaxIter) && (x(1)<=512) && (x(2) <=512)
     eps = norm(p_k*a_k, 2);
     k = k+1;
 end %while
-
-%plot graph of function and path
-rosenbrock_2d([X(1), X(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
-%test_function([X(1), X(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
-hold on
-plot3(x_x, x_y, f_k, 'r');
-
+if nargin > 5 && strcmp(plot,'plot')
+    %plot graph of function and path
+    %rosenbrock_2d([X(1), X(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
+    test_function([X(1), X(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
+    hold on
+    plot3(x_x, x_y, f_k, 'r');
+end
 
 
 end
@@ -67,9 +67,9 @@ function alpha = linesearch(a_k, beta, p_k, f, x)
 end
 
 function out = Grad(x_k)
-f_grad = @(x,y) [2*x - 400*x*(- x^2 + y) - 2, - 200*x^2 + 200*y];
-%f_grad = @(x,y) [(x*sign(y - x + 47)*cos(abs(y - x + 47)^(1/2)))/(2*abs(y - x + 47)^(1/2)) - sin(abs(y - x + 47)^(1/2)) - (sign(x/2 + y + 47)*cos(abs(x/2 + y + 47)^(1/2))*(y + 47))/(4*abs(x/2 + y + 47)^(1/2)), ...
-%    - sin(abs(x/2 + y + 47)^(1/2)) - (x*sign(y - x + 47)*cos(abs(y - x + 47)^(1/2)))/(2*abs(y - x + 47)^(1/2)) - (sign(x/2 + y + 47)*cos(abs(x/2 + y + 47)^(1/2))*(y + 47))/(2*abs(x/2 + y + 47)^(1/2))];
+%f_grad = @(x,y) [2*x - 400*x*(- x^2 + y) - 2, - 200*x^2 + 200*y];
+f_grad = @(x,y) [(x*sign(y - x + 47)*cos(abs(y - x + 47)^(1/2)))/(2*abs(y - x + 47)^(1/2)) - sin(abs(y - x + 47)^(1/2)) - (sign(x/2 + y + 47)*cos(abs(x/2 + y + 47)^(1/2))*(y + 47))/(4*abs(x/2 + y + 47)^(1/2)), ...
+    - sin(abs(x/2 + y + 47)^(1/2)) - (x*sign(y - x + 47)*cos(abs(y - x + 47)^(1/2)))/(2*abs(y - x + 47)^(1/2)) - (sign(x/2 + y + 47)*cos(abs(x/2 + y + 47)^(1/2))*(y + 47))/(2*abs(x/2 + y + 47)^(1/2))];
 out = f_grad(x_k(1), x_k(2));
 end
 

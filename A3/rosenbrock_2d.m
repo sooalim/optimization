@@ -32,11 +32,13 @@ function varargout = rosenbrock_2d(X, r_x, r_y)
     if (nargin == 3)
        s = linspace(r_x,r_y,40);
        t = s;
-       colormap(hsv);
+       colormap(white);
        [x, y] = meshgrid(s, t);
-       mesh(x, y, 100*(y - x.^2).^2 + (1-x).^2) 
-       xlabel('x'); ylabel('y'); zlabel('function'); colorbar 
-       text(1, 1 , f(1,1), '\leftarrow function minimal point');
+       surfc(x, y, 100*(y - x.^2).^2 + (1-x).^2) 
+       xlabel('x'); ylabel('y'); zlabel('function'); %colorbar
+       t = text(1, 1 , f(1,1), '\leftarrow function minimal point');
+       t.Color = 'red';
+       t.FontSize = 15;
     end
 
 end

@@ -1,8 +1,11 @@
-function [x,f_k, x_x, x_y] = con_grad(X, f, tol, N, beta)
+function [x,f_k, x_x, x_y] = steepest_descent(X, f, tol, N, beta)
 
-% example: [a,f_k,x,y] = steepest_descent([-1.2, 1], f, 1e-4, 6000, 0.5);
-% example: [a,f_k,x,y] = steepest_descent([1.2, 1.2], f, 1e-4, 6000, 0.5);
-% f = @(x, y) 100*(y - x.^2).^2 + (1-x).^2
+%[a,f_k,x,y] = steepest_descent([1.2, 1.2], f, 1e-6,7000, 0.1); -- 196
+%(rosenbrock) pk = not normalized.
+%[a,f_k,x,y] = steepest_descent([500,370], f, 1e-6, 7000, 0.1);
+%(egg holder, pk = pk/norm(pk)
+% f = @(x, y) 100*(y - x.^2).^2 + (1-x).^2 (rosenbrock)
+% f = @(x, y) -1*(y+47)*sin(sqrt(abs(x/2+(y+47))))-x*sin(sqrt(abs(x-(y+47)))); % eggholder function
 % Inputs
 % X: starting value (initial guess x_0)
 % f: function
@@ -10,12 +13,12 @@ function [x,f_k, x_x, x_y] = con_grad(X, f, tol, N, beta)
 % N: max iterations
 % direction p_k = -grad(f(x_k))
 % initial step size a_0 = 1
-% step size a_k = grad(f(x_k))*p_k/(p_k^T * Q * p_k)
+% step size a_k deteremined by backtracking
 % x_k+1 = x_k + a_k*p_k
 format long
 
 if (nargin < 4) 
-    tol = 1e-5;
+    tol = 1e-6;
 end %if
 
 k = 1; %initialize count
@@ -23,9 +26,9 @@ x = X;
 MaxIter = N;
 eps = 1;
 
-while (eps > tol) && (k <= MaxIter)
+while (eps > tol) && (k <= MaxIter) && (x(1)<=512) && (x(2) <=512)
     p_k = -1 * Grad(x);
-    p_k = p_k/norm(p_k);
+    %p_k = p_k/norm(p_k);
     
     a_k = 1;
     a_k = linesearch(a_k, beta, p_k, f, x);
@@ -44,7 +47,7 @@ end %while
 rosenbrock_2d([X(1), X(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
 %test_function([X(1), X(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
 hold on
-scatter3(x_x, x_y, f_k, 'r.');
+plot3(x_x, x_y, f_k, 'r');
 
 
 
