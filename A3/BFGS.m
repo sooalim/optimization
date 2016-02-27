@@ -44,7 +44,7 @@ while  (k <= MaxIter) && (norm(grad1,2) > tol)
     x = x + s_k;
     steps(k) = norm(x - old_x, 2);
     norm_grad(k) = norm(grad1,2);
-    
+   
     %{
     if(x(1) < -512 || x(2) < -512 || x(1) > 512 || x(2) > 512)
        break;
@@ -80,7 +80,6 @@ while  (k <= MaxIter) && (norm(grad1,2) > tol)
     x_x(k) = x(1);
     x_y(k) = x(2);
     f_k(k) = f(x(1), x(2));    
-    
     k = k+1;
     
 end %while
@@ -88,12 +87,12 @@ end %while
 if nargin > 5 && strcmp(plot,'plot')
     %plot graph of function and path
     
-    rosenbrock_2d([x_0(1), x_0(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
+    
+    rosenbrock_2d([x_0(1), x_0(2)],min(min(x_x, x_y)),max(max(x_x, x_y)));
     %test_function([X(1), X(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
     hold on
     plot3(x_x, x_y, f_k, 'r');
 end
-
 end
 %end BFGS
 
@@ -107,7 +106,6 @@ function alpha = linesearch(a_k, beta, p_k, f, x)
  end
  alpha = a_k;
 end
-
 % inexact line search - cubic interpolation method
 function alpha = inexact(a_k, p_k, f, x, grad)
  in = x + a_k * p_k'; 
@@ -115,8 +113,10 @@ function alpha = inexact(a_k, p_k, f, x, grad)
  n =1;
  f0(n) = feval(f, x(1), x(2));
  f1(n)= feval(f, in(1), in(2));
-
- alpha(n) = 2*(f1(n) - f0(n))/(grad*p_k);
+ 
+ alpha(n) = 1;
+ %alpha(n) = 2*(f1(n) - f0(n))/(grad*p_k);
+ 
  
  while feval(f, in(1), in(2)) > (feval(f, x(1), x(2)) + c1 * a_k * (p_k' * p_k))
      n = n+1;
@@ -132,18 +132,20 @@ function alpha = inexact(a_k, p_k, f, x, grad)
          alpha(n) = (-b + sqrt(b^2 - 3*a*grad*p_k))/(3*a);
          
      end %if-else
-     
-     if abs(alpha(n)/alpha(n-1))>0.9 || abs(alpha(n)/alpha(n-1))<0.1
-         alpha(n) = 1/2 * alpha(n-1);
-     end %if 
-     
     x = in;
     in = x + alpha(n) * p_k';
     f0(n) = f1(n-1);
     f1(n) = feval(f, in(1), in(2));
-    
+ 
+    if (abs((alpha(n)-alpha(n-1))/alpha(n-1))>0.9 || abs((alpha(n)-alpha(n-1))/alpha(n-1))<0.1)
+     alpha(n) = 1/2 * alpha(n-1);
+    end %if 
+ 
  end % while
+
+ 
  alpha = alpha(n);
+
 end %inexact search
 
 function out = Grad(x_k)
