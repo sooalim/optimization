@@ -1,4 +1,4 @@
-function [x,f_k, x_x, x_y] = conjugate_gradient(X, f, tol, N, beta, plot)
+function [x,f_k, x_x, x_y, step_length, z] = conjugate_gradient(X, f, tol, N, beta, plot)
 
 % example: [a,f_k,x,y] = conjugate_gradient([-1.2, 1], f, 1e-6, 300, 0.1);
 % example: [a,f_k,x,y] = con_grad([1.2, 1.2], f, 1e-6, 300, 0.1);
@@ -29,10 +29,14 @@ p_k = p_k/norm(p_k);
 f_new = feval(f, x(1), x(2));
 
 while (norm(p_k,2) > 1e-5*(1+abs(f_new))) && (k <= MaxIter) 
-   
+    
     a_k = 1;
     a_k = linesearch(a_k, beta, p_k, f, x);
+    old_x = x;
     x = x + a_k * p_k;
+    
+    step_length(k,1:2) = [k, norm(x - old_x, 2)];
+    
     if(x(1) < -512 || x(2) < -512 || x(1) > 512 || x(2) > 512)
        break;
     end
@@ -42,22 +46,23 @@ while (norm(p_k,2) > 1e-5*(1+abs(f_new))) && (k <= MaxIter)
     PolakB = grad_f_new * (grad_f_new - grad_f)' / norm(grad_f, 2)^2;
     p_k = -1 * grad_f_new + PolakB * p_k;
     grad_f = grad_f_new;
-    k = k+1;
  
     x_x(k) = x(1);
     x_y(k) = x(2);
-    f_k(k) = f(x(1), x(2));    
+    f_k(k) = f(x(1), x(2));
+    z(k, 1:3) = [k, x];
     eps = norm(p_k * a_k, 2);
-    
-    k = k+1;
+    k = k+1; 
+
 end %while
 
 %plot graph of function and path
-%rosenbrock_2d([X(1), X(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
 if nargin > 5 && strcmp(plot,'plot')
+        %rosenbrock_2d([X(1), X(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
         test_function([X(1), X(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
         hold on
-        scatter3(x_x, x_y, f_k, 'r.');
+        plot3(x_x, x_y, f_k, 'r');
+        scatter3(x_x, x_y, f_k, 'b*');
 end
 end
 %end con_grad

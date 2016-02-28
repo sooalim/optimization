@@ -1,4 +1,4 @@
-function [x,f_k, x_x, x_y] = steepest_descent(X, f, tol, N, beta, plot)
+function [x,f_k, x_x, x_y, step_length, z] = steepest_descent(X, f, tol, N, beta, plot)
 
 %[a,f_k,x,y] = steepest_descent([1.2, 1.2], f, 1e-6,7000, 0.1); 
 %(rosenbrock) (196,872 - non normalized)
@@ -32,14 +32,17 @@ while (eps > tol) && (k <= MaxIter) && (x(1)<=512) && (x(2) <=512)
     
     a_k = 1;
     a_k = linesearch(a_k, beta, p_k, f, x);
-    
+    old_x = x;
     x = x + a_k * p_k;
+    step_length(k, 1:2) = [k, norm(x - old_x, 2)];
     if(x(1) < -512 || x(2) < -512 || x(1) > 512 || x(2) > 512)
        break;
     end    
     x_x(k) = x(1);
     x_y(k) = x(2);
+    z(k, 1:3) = [k,x];
     f_k(k) = f(x(1), x(2));    
+    
     eps = norm(p_k*a_k, 2);
     k = k+1;
 end %while
@@ -49,6 +52,7 @@ if nargin > 5 && strcmp(plot,'plot')
     test_function([X(1), X(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
     hold on
     plot3(x_x, x_y, f_k, 'r');
+    scatter3(x_x, x_y, f_k, 'b*');
 end
 
 

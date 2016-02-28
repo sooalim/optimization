@@ -1,4 +1,4 @@
-function [x,f_k, x_x, x_y, steps, norm_grad] = BFGS(x_0, f, tol, MaxIter, beta, plot)
+function [x,f_k, x_x, x_y, step_length, z] = BFGS(x_0, f, tol, MaxIter, beta, plot)
 %[a,f_k,x,y] = BFGS([1.2, 1.2], f, 1e-6,7000, 0.1); 
 %(rosenbrock) (196,872 - non normalized)
 %[a,f_k,x,y] = BFGS([500,370], f, 1e-6, 7000, 0.1);
@@ -14,6 +14,7 @@ function [x,f_k, x_x, x_y, steps, norm_grad] = BFGS(x_0, f, tol, MaxIter, beta, 
 % initial step size a_0 = 1
 % step size a_k deteremined by backtracking
 % x_k+1 = x_k + a_k*p_k
+
 format long
 
 if (nargin < 4) 
@@ -27,6 +28,7 @@ x=x_0;
  B = Hess(x);
  H = inv(B);
 steps(k) = 1;
+
 %f'(x)
 grad1 = Grad(x);
 
@@ -37,18 +39,17 @@ while  (k <= MaxIter)
     a_k = 1;
     a_k = linesearch(a_k, beta, p_k, f, x);
     %a_k = inexact(a_k, p_k, f, x, grad1);    
-    
     s_k = a_k * p_k; % x_(k+1) - x_k
     s_k = s_k'; 
     old_x = x;
     x = x + s_k;
     steps(k) = norm(x - old_x, 2);
-    steps(k);
     if (steps(k) < tol) 
         break;
     end
+    step_length(k, 1:2) = [k, steps(k)];
     norm_grad(k) = norm(grad1,2);
-   
+    
     %{
     if(x(1) < -512 || x(2) < -512 || x(1) > 512 || x(2) > 512)
        break;
@@ -59,24 +60,10 @@ while  (k <= MaxIter)
     y_k = grad2 - grad1;
     y_k = y_k';
     grad1 = grad2;
-    
-    % inputs for updating hessian matrix
-    %{
-    x1 = B * s_k';
-    x2 = s_k * B;
-    x3 = x2 * s_k';    
-    x4 = y_k' * y_k;
-    x5 = y_k' * s_k';
-    x6 = x4/x5;
-    x7 = (x1 * x2)/x3;
-    % update Hessian matrix B^-1
-    B = B - x7 + x6;
-    H = inv(B);
-    %}
      
     rho = 1/(y_k'*s_k');
     if k ==1
-        %H = (y_k'* s_k')/(y_k' * y_k) * eye(2);
+        H = (y_k'* s_k')/(y_k' * y_k) * eye(2);
     else
           s_k = s_k';
           rho = (y_k' * s_k)^-1;
@@ -90,18 +77,19 @@ while  (k <= MaxIter)
     end
     x_x(k) = x(1);
     x_y(k) = x(2);
+    z(k, 1:3) = [k, x];
     f_k(k) = f(x(1), x(2));    
-    k = k+1
+    k = k+1;
     
 end %while
 
 if nargin > 5 && strcmp(plot,'plot')
     %plot graph of function and path
-    
-    rosenbrock_2d([x_0(1), x_0(2)],min(min(x_x, x_y)),max(max(x_x, x_y)));
-    %test_function([x_0(1), x_0(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
+    %rosenbrock_2d([x_0(1), x_0(2)],min(min(x_x, x_y)),max(max(x_x, x_y)));
+    test_function([x_0(1), x_0(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
     hold on
     plot3(x_x, x_y, f_k, 'r');
+    scatter3(x_x, x_y, f_k, 'b*');
 end
 end
 %end BFGS
@@ -152,20 +140,18 @@ function alpha = inexact(a_k, p_k, f, x, grad)
     end %if 
  
  end % while
-
- 
  alpha = alpha(n);
 
 end %inexact search
 
 function out = Grad(x_k)
-f_grad = @(x,y) [2*x - 400*x*(- x^2 + y) - 2, - 200*x^2 + 200*y];
-%f_grad = @(x,y) [(x*sign(y - x + 47)*cos(abs(y - x + 47)^(1/2)))/(2*abs(y - x + 47)^(1/2)) - sin(abs(y - x + 47)^(1/2)) - (sign(x/2 + y + 47)*cos(abs(x/2 + y + 47)^(1/2))*(y + 47))/(4*abs(x/2 + y + 47)^(1/2)), ...
-%    - sin(abs(x/2 + y + 47)^(1/2)) - (x*sign(y - x + 47)*cos(abs(y - x + 47)^(1/2)))/(2*abs(y - x + 47)^(1/2)) - (sign(x/2 + y + 47)*cos(abs(x/2 + y + 47)^(1/2))*(y + 47))/(2*abs(x/2 + y + 47)^(1/2))];
+%f_grad = @(x,y) [2*x - 400*x*(- x^2 + y) - 2, - 200*x^2 + 200*y];
+f_grad = @(x,y) [(x*sign(y - x + 47)*cos(abs(y - x + 47)^(1/2)))/(2*abs(y - x + 47)^(1/2)) - sin(abs(y - x + 47)^(1/2)) - (sign(x/2 + y + 47)*cos(abs(x/2 + y + 47)^(1/2))*(y + 47))/(4*abs(x/2 + y + 47)^(1/2)), ...
+    - sin(abs(x/2 + y + 47)^(1/2)) - (x*sign(y - x + 47)*cos(abs(y - x + 47)^(1/2)))/(2*abs(y - x + 47)^(1/2)) - (sign(x/2 + y + 47)*cos(abs(x/2 + y + 47)^(1/2))*(y + 47))/(2*abs(x/2 + y + 47)^(1/2))];
 out = f_grad(x_k(1), x_k(2));
 end
 
 function out = Hess(x_k)
 f_hess = @(x,y) [1200*x^2-400*y+2,-400*x;-400*x,200];
 out = f_hess(x_k(1), x_k(2));
-end
+end  %for initial hessian matrix
