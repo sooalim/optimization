@@ -1,4 +1,4 @@
-function [x,f_k, x_x, x_y, steps, norm_grad] = BFGS(x_0, f, tol, MaxIter, beta, plot)
+function [x,f_k, x_x, x_y, steps, norm_grad] = Newton_inexact(x_0, f, tol, MaxIter, beta, plot)
 %[a,f_k,x,y] = BFGS([1.2, 1.2], f, 1e-6,7000, 0.1); 
 %(rosenbrock) (196,872 - non normalized)
 %[a,f_k,x,y] = BFGS([500,370], f, 1e-6, 7000, 0.1);
@@ -26,27 +26,23 @@ x=x_0;
 % B = eye(2,2);
  B = Hess(x);
  H = inv(B);
-steps(k) = 1;
+
 %f'(x)
 grad1 = Grad(x);
 
-while  (k <= MaxIter) 
+while  (k <= MaxIter) && (norm(grad1,2) > tol) 
     p_k = -1 * H * grad1';
     p_k = p_k/norm(p_k);    
     
     a_k = 1;
-    a_k = linesearch(a_k, beta, p_k, f, x);
-    %a_k = inexact(a_k, p_k, f, x, grad1);    
+    %a_k = linesearch(a_k, beta, p_k, f, x);
+    a_k = inexact(a_k, p_k, f, x, grad1);    
     
     s_k = a_k * p_k; % x_(k+1) - x_k
     s_k = s_k'; 
     old_x = x;
     x = x + s_k;
     steps(k) = norm(x - old_x, 2);
-    steps(k);
-    if (steps(k) < tol) 
-        break;
-    end
     norm_grad(k) = norm(grad1,2);
    
     %{
@@ -74,32 +70,26 @@ while  (k <= MaxIter)
     H = inv(B);
     %}
      
-    rho = 1/(y_k'*s_k');
+    x1 = 1/(y_k'*s_k');
     if k ==1
         %H = (y_k'* s_k')/(y_k' * y_k) * eye(2);
     else
-          s_k = s_k';
-          rho = (y_k' * s_k)^-1;
-          Id = eye(2, 2);
-          x1 = Id - rho * s_k * y_k';
-          x2 = H;
-          x3 = Id - rho * y_k * s_k';
-          x4 = rho * s_k * s_k';
-          H = x1 * x2 * x3 + x4;
-          
+        H = (eye(2)- x1 * s_k * y_k) * H * (eye(2) - x1 * y_k' * s_k') ...
+            + (x1 * (s_k * s_k'));
     end
     x_x(k) = x(1);
     x_y(k) = x(2);
     f_k(k) = f(x(1), x(2));    
-    k = k+1
+    k = k+1;
     
 end %while
 
 if nargin > 5 && strcmp(plot,'plot')
     %plot graph of function and path
     
+    
     rosenbrock_2d([x_0(1), x_0(2)],min(min(x_x, x_y)),max(max(x_x, x_y)));
-    %test_function([x_0(1), x_0(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
+    %test_function([X(1), X(2)],min(min(x_x, x_y)),max(max(x_x, x_y))) ;
     hold on
     plot3(x_x, x_y, f_k, 'r');
 end
